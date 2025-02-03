@@ -1,4 +1,6 @@
 (async function () {
+  alert("Made by Ghoulx 🧑‍💻 (We cooking this gon' be priv 🔥)");
+
   const SITE_DETECTION = {
     QUIZLET: "quizlet.com",
     BLOOKET: "blooket.com"
@@ -34,7 +36,7 @@
         Results will appear here.
       </div>
       <small style="color: #0074D9; display: block; text-align: center; margin-top: 10px;">
-        Created by Ghoulx 💻
+        Created by Ghoulx 💻 (We cooking this gon' be priv 🔥)
       </small>
     `;
     document.body.appendChild(gui);
