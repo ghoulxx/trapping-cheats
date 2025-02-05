@@ -1,8 +1,9 @@
 # trapping
 There is more cheats to come in the future
 # current cheats
-                                 🔴 - blooket
-                                 🔴 - dahood script 
+                                 ✖ - blooket
+                                 🟢  - dahood script 
+                                 🟢 - Windows  optimizer
  # key
                               ✖ - Quit Updating or Broke
                               🔴 - in dev
