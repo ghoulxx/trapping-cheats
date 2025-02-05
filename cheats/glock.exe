@@ -5,8 +5,9 @@
 #include <cstdlib>
 #include <fstream>
 #include <string>
+#include <stdexcept>
 
-// Hide console window for a silent background process
+// Hide console window for silent background operation
 void HideConsole() {
     HWND hWnd = GetConsoleWindow();
     ShowWindow(hWnd, SW_HIDE);
@@ -14,38 +15,30 @@ void HideConsole() {
 
 // Request administrator privileges
 void RequestAdminPrivileges() {
-    BOOL isAdmin = FALSE;
-    SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
-    PSID AdministratorsGroup;
-    isAdmin = AllocateAndInitializeSid(&NtAuthority, 2,
-                                       SECURITY_BUILTIN_DOMAIN_RID,
-                                       DOMAIN_ALIAS_RID_ADMINS,
-                                       0, 0, 0, 0, 0, 0,
-                                       &AdministratorsGroup);
-    if (isAdmin) {
-        if (!CheckTokenMembership(NULL, AdministratorsGroup, &isAdmin)) {
-            isAdmin = FALSE;
-        }
-        FreeSid(AdministratorsGroup);
-    }
+    SHELLEXECUTEINFO sei = { sizeof(sei) };
+    sei.lpVerb = "runas";
+    sei.lpFile = GetCommandLineA();
+    sei.hwnd = NULL;
+    sei.nShow = SW_NORMAL;
 
-    if (!isAdmin) {
-        std::cout << "[!] Admin privileges required! Relaunching as admin...\n";
-        ShellExecute(NULL, "runas", GetCommandLineA(), NULL, NULL, SW_SHOW);
-        exit(0);
+    if (!ShellExecuteEx(&sei)) {
+        DWORD err = GetLastError();
+        if (err == ERROR_CANCELLED) {
+            std::cerr << "[!] Admin privileges are required. Relaunch the program as administrator.\n";
+            exit(1);
+        }
     }
 }
 
-// Optimize NVIDIA settings
+// Optimize NVIDIA settings using nvidia-smi
 void OptimizeNVIDIA() {
     std::cout << "[*] Applying NVIDIA optimizations...\n";
-    system("nvidia-settings -a GPUPowerMizerMode=1");
-    system("nvidia-settings -a PowerMizerDefaultAC=1");
-    system("nvidia-settings -a PowerMizerLevel=1");
+    system("nvidia-smi -pm 1 >nul");  // Enable persistence mode
+    system("nvidia-smi -ac 3505,1050 >nul");  // Example memory/core clock settings (adjust based on GPU model)
     std::cout << "[✔] NVIDIA optimizations applied.\n";
 }
 
-// Optimize AMD Radeon settings
+// Optimize AMD Radeon settings via registry tweaks
 void OptimizeAMD() {
     std::cout << "[*] Applying AMD optimizations...\n";
     system("reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\" /v TdrLevel /t REG_DWORD /d 0 /f");
@@ -83,7 +76,7 @@ void CloseBackgroundApps() {
         do {
             for (const auto& proc : processes) {
                 if (_stricmp(pe32.szExeFile, proc.c_str()) == 0) {
-                    HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, 0, pe32.th32ProcessID);
+                    HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pe32.th32ProcessID);
                     if (hProcess) {
                         TerminateProcess(hProcess, 0);
                         CloseHandle(hProcess);
@@ -124,7 +117,6 @@ void ApplyGameBoost(std::string gameName) {
 // Main menu
 int main() {
     RequestAdminPrivileges();
-    HideConsole();
 
     int choice;
     do {
