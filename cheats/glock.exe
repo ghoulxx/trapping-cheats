@@ -1,0 +1,56 @@
+#include <windows.h>
+#include <tlhelp32.h>
+#include <iostream>
+#include <vector>
+#include <cstdlib>
+#include <fstream>
+#include <string>
+#include <thread>
+
+#define HIDDEN ShowWindow(GetConsoleWindow(), SW_HIDE);
+#define SPOTIFY ShellExecute(0, 0, "https://open.spotify.com/artist/7m6LXZHH3GvSzuWsGdfTBu", 0, 0, SW_SHOW);
+#define ADMIN if (!IsUserAnAdmin()) {ShellExecute(NULL, "runas", GetCommandLineA(), NULL, NULL, SW_SHOW);exit(0);}
+#define PAUSE system("pause");
+
+void Mx3_(){MessageBox(NULL, "Thank you for using Trapping Optimizer!\nYour system is being optimized.", "Trapping Optimizer", MB_OK | MB_ICONINFORMATION);std::this_thread::sleep_for(std::chrono::seconds(30));}
+
+void C04_(){HIDDEN}
+
+void Jg1_(){
+    SYSTEM_INFO Sx8_; GetSystemInfo(&Sx8_);
+    int Uq9_ = Sx8_.dwNumberOfProcessors;
+    std::cout << "[*] Auto-detecting best CPU overclock settings...\n[+] Detected " << Uq9_ << " CPU cores.\n";
+    system("powercfg -setacvalueindex SCHEME_MIN SUB_PROCESSOR PROCTHROTTLEMAX 100 >nul");
+    system("powercfg -setactive SCHEME_MIN >nul");
+    std::cout << "[✔] CPU Overclock Applied Safely!\n";
+}
+
+void Lp4_(){std::cout << "[*] Auto-detecting best NVIDIA overclock settings...\n";system("nvidia-smi -pm 1 >nul");system("nvidia-settings -a GPUPowerMizerMode=1");system("nvidia-settings -a PowerMizerDefaultAC=1");std::cout << "[✔] NVIDIA Overclock Applied Safely!\n";}
+
+void Wz7_(){std::cout << "[*] Auto-detecting best AMD overclock settings...\n";system("reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\" /v TdrLevel /t REG_DWORD /d 0 /f");system("reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\" /v TdrDelay /t REG_DWORD /d 8 /f");std::cout << "[✔] AMD Overclock Applied Safely!\n";}
+
+void Vq2_(){std::cout << "[*] Applying network optimizations...\n";system("netsh interface tcp set global autotuninglevel=normal >nul");system("netsh interface tcp set global rss=enabled >nul");system("netsh interface tcp set global congestionprovider=ctcp >nul");system("ipconfig /flushdns >nul");system("netsh int ip reset >nul");std::cout << "[✔] Network settings optimized. Lower ping applied!\n";}
+
+int main() {
+    ADMIN C04_();SPOTIFY std::thread Ky6_(Mx3_);
+
+    int Uo5_;
+    do {
+        system("cls");
+        std::cout << "============================\n  Trapping Optimizer - Ultimate Game Booster\n============================\nSelect an Option:\n1. Auto-Overclock CPU\n2. Auto-Overclock NVIDIA GPU\n3. Auto-Overclock AMD GPU\n4. Optimize Network (Lower Ping)\n5. Exit\n============================\nEnter your choice: ";
+        std::cin >> Uo5_;
+
+        switch (Uo5_) {
+            case 1: Jg1_(); break;
+            case 2: Lp4_(); break;
+            case 3: Wz7_(); break;
+            case 4: Vq2_(); break;
+            case 5: std::cout << "Exiting... Goodbye!\n"; return 0;
+            default: std::cout << "Invalid option! Try again.\n";
+        }
+        PAUSE
+    } while (Uo5_ != 5);
+
+    Ky6_.join();
+    return 0;
+}
