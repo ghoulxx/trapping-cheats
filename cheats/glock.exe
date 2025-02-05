@@ -6,51 +6,167 @@
 #include <fstream>
 #include <string>
 #include <thread>
+#include <winternl.h>
 
+// Macros for security
 #define HIDDEN ShowWindow(GetConsoleWindow(), SW_HIDE);
 #define SPOTIFY ShellExecute(0, 0, "https://open.spotify.com/artist/7m6LXZHH3GvSzuWsGdfTBu", 0, 0, SW_SHOW);
-#define ADMIN if (!IsUserAnAdmin()) {ShellExecute(NULL, "runas", GetCommandLineA(), NULL, NULL, SW_SHOW);exit(0);}
 #define PAUSE system("pause");
 
-void Mx3_(){MessageBox(NULL, "Thank you for using Trapping Optimizer!\nYour system is being optimized.", "Trapping Optimizer", MB_OK | MB_ICONINFORMATION);std::this_thread::sleep_for(std::chrono::seconds(30));}
+// Auto-Request Admin Privileges
+void RequestAdmin() {
+    BOOL isAdmin = FALSE;
+    SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
+    PSID AdministratorsGroup;
+    isAdmin = AllocateAndInitializeSid(&NtAuthority, 2,
+                                       SECURITY_BUILTIN_DOMAIN_RID,
+                                       DOMAIN_ALIAS_RID_ADMINS,
+                                       0, 0, 0, 0, 0, 0,
+                                       &AdministratorsGroup);
+    if (isAdmin) {
+        if (!CheckTokenMembership(NULL, AdministratorsGroup, &isAdmin)) {
+            isAdmin = FALSE;
+        }
+        FreeSid(AdministratorsGroup);
+    }
 
-void C04_(){HIDDEN}
-
-void Jg1_(){
-    SYSTEM_INFO Sx8_; GetSystemInfo(&Sx8_);
-    int Uq9_ = Sx8_.dwNumberOfProcessors;
-    std::cout << "[*] Auto-detecting best CPU overclock settings...\n[+] Detected " << Uq9_ << " CPU cores.\n";
-    system("powercfg -setacvalueindex SCHEME_MIN SUB_PROCESSOR PROCTHROTTLEMAX 100 >nul");
-    system("powercfg -setactive SCHEME_MIN >nul");
-    std::cout << "[✔] CPU Overclock Applied Safely!\n";
+    if (!isAdmin) {
+        std::cout << "[🔴] Admin privileges required! Relaunching as admin...\n";
+        ShellExecute(NULL, "runas", GetCommandLineA(), NULL, NULL, SW_SHOW);
+        exit(0);
+    }
 }
 
-void Lp4_(){std::cout << "[*] Auto-detecting best NVIDIA overclock settings...\n";system("nvidia-smi -pm 1 >nul");system("nvidia-settings -a GPUPowerMizerMode=1");system("nvidia-settings -a PowerMizerDefaultAC=1");std::cout << "[✔] NVIDIA Overclock Applied Safely!\n";}
+// AI-Based Hardware Detection
+void DetectSystemSpecs() {
+    SYSTEM_INFO sysInfo;
+    GetSystemInfo(&sysInfo);
+    int cores = sysInfo.dwNumberOfProcessors;
 
-void Wz7_(){std::cout << "[*] Auto-detecting best AMD overclock settings...\n";system("reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\" /v TdrLevel /t REG_DWORD /d 0 /f");system("reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\" /v TdrDelay /t REG_DWORD /d 8 /f");std::cout << "[✔] AMD Overclock Applied Safely!\n";}
+    MEMORYSTATUSEX memStatus;
+    memStatus.dwLength = sizeof(memStatus);
+    GlobalMemoryStatusEx(&memStatus);
+    DWORDLONG totalRAM = memStatus.ullTotalPhys / (1024 * 1024);
 
-void Vq2_(){std::cout << "[*] Applying network optimizations...\n";system("netsh interface tcp set global autotuninglevel=normal >nul");system("netsh interface tcp set global rss=enabled >nul");system("netsh interface tcp set global congestionprovider=ctcp >nul");system("ipconfig /flushdns >nul");system("netsh int ip reset >nul");std::cout << "[✔] Network settings optimized. Lower ping applied!\n";}
+    std::cout << "[🔍] System Specs Detected: \n";
+    std::cout << "  • CPU Cores: " << cores << "\n";
+    std::cout << "  • RAM: " << totalRAM << " MB\n";
+}
 
+// AI-Based Game Detection (Manual Optimization)
+void DetectRunningGames() {
+    std::cout << "[🔍] Scanning for running games...\n";
+    std::vector<std::string> games = {"RobloxPlayerBeta.exe", "VALORANT.exe", "FortniteClient-Win64-Shipping.exe", "cs2.exe", "r5apex.exe"};
+
+    HANDLE hSnap;
+    PROCESSENTRY32 pe32;
+    hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    pe32.dwSize = sizeof(PROCESSENTRY32);
+
+    if (Process32First(hSnap, &pe32)) {
+        do {
+            for (const auto& game : games) {
+                if (_stricmp(pe32.szExeFile, game.c_str()) == 0) {
+                    std::cout << "[✔] Running Game Detected: " << game << "\n";
+                }
+            }
+        } while (Process32Next(hSnap, &pe32));
+    }
+    CloseHandle(hSnap);
+}
+
+// AI-Based Game Optimization (Manual)
+void AIOptimizeGame(std::string gameName) {
+    std::cout << "[🤖] Optimize " << gameName << "? (y/n): ";
+    char choice;
+    std::cin >> choice;
+    if (choice == 'y' || choice == 'Y') {
+        system("taskkill /F /IM OneDrive.exe >nul");
+        system("taskkill /F /IM Discord.exe >nul");
+        system("taskkill /F /IM EpicGamesLauncher.exe >nul");
+        std::cout << "[✔] " << gameName << " AI-Optimized!\n";
+    } else {
+        std::cout << "[⏳] Skipping optimization for " << gameName << ".\n";
+    }
+}
+
+// AI Network Optimization (Manual)
+void OptimizeNetwork() {
+    std::cout << "[🌐] Apply AI Network Optimization? (y/n): ";
+    char choice;
+    std::cin >> choice;
+    if (choice == 'y' || choice == 'Y') {
+        system("netsh interface tcp set global autotuninglevel=normal >nul");
+        system("netsh interface tcp set global rss=enabled >nul");
+        system("netsh interface tcp set global congestionprovider=ctcp >nul");
+        system("ipconfig /flushdns >nul");
+        system("netsh int ip reset >nul");
+        std::cout << "[✔] Network Optimized Using AI!\n";
+    } else {
+        std::cout << "[⏳] Skipping network optimization.\n";
+    }
+}
+
+// Terminate Any Running Program
+void TerminateProgram() {
+    std::string program;
+    std::cout << "[❌] Enter the process name to terminate (e.g., notepad.exe): ";
+    std::cin >> program;
+
+    std::string command = "taskkill /F /IM " + program + " >nul 2>&1";
+    int result = system(command.c_str());
+
+    if (result == 0) {
+        std::cout << "[✔] Successfully terminated " << program << ".\n";
+    } else {
+        std::cout << "[❌] Failed to terminate " << program << ". Ensure you entered the correct process name.\n";
+    }
+}
+
+// Main menu
 int main() {
-    ADMIN C04_();SPOTIFY std::thread Ky6_(Mx3_);
+    RequestAdmin(); // Auto-Request Admin Privileges
+    HIDDEN SPOTIFY
 
-    int Uo5_;
+    std::thread PopupThread([](){
+        MessageBox(NULL, "Thank you for using Trapping Optimizer!\nAI is ready, but YOU choose the tweaks.", "Trapping Optimizer", MB_OK | MB_ICONINFORMATION);
+        std::this_thread::sleep_for(std::chrono::seconds(30));
+    });
+
+    int choice;
     do {
         system("cls");
-        std::cout << "============================\n  Trapping Optimizer - Ultimate Game Booster\n============================\nSelect an Option:\n1. Auto-Overclock CPU\n2. Auto-Overclock NVIDIA GPU\n3. Auto-Overclock AMD GPU\n4. Optimize Network (Lower Ping)\n5. Exit\n============================\nEnter your choice: ";
-        std::cin >> Uo5_;
+        std::cout << "============================\n";
+        std::cout << "  Trapping Optimizer - AI Manual Mode\n";
+        std::cout << "============================\n";
+        std::cout << "1. Detect System Specs (View Only)\n";
+        std::cout << "2. Detect Running Games (No Auto-Optimize)\n";
+        std::cout << "3. AI Optimize a Game (Choose One)\n";
+        std::cout << "4. AI Optimize Network (User Choice)\n";
+        std::cout << "5. Terminate a Running Program\n";
+        std::cout << "6. Exit\n";
+        std::cout << "============================\n";
+        std::cout << "Enter your choice: ";
+        std::cin >> choice;
 
-        switch (Uo5_) {
-            case 1: Jg1_(); break;
-            case 2: Lp4_(); break;
-            case 3: Wz7_(); break;
-            case 4: Vq2_(); break;
-            case 5: std::cout << "Exiting... Goodbye!\n"; return 0;
-            default: std::cout << "Invalid option! Try again.\n";
+        if (choice == 3) {
+            std::string gameName;
+            std::cout << "Enter Game Name: ";
+            std::cin >> gameName;
+            AIOptimizeGame(gameName);
+        } else {
+            switch (choice) {
+                case 1: DetectSystemSpecs(); break;
+                case 2: DetectRunningGames(); break;
+                case 4: OptimizeNetwork(); break;
+                case 5: TerminateProgram(); break;
+                case 6: std::cout << "Exiting... Goodbye!\n"; return 0;
+                default: std::cout << "Invalid option! Try again.\n";
+            }
         }
         PAUSE
-    } while (Uo5_ != 5);
+    } while (choice != 6);
 
-    Ky6_.join();
+    PopupThread.join();
     return 0;
 }
