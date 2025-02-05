@@ -16,15 +16,15 @@ void HideConsole() {
 // Request administrator privileges
 void RequestAdminPrivileges() {
     SHELLEXECUTEINFO sei = { sizeof(sei) };
-    sei.lpVerb = "runas";
-    sei.lpFile = GetCommandLineA();
+    sei.lpVerb = L"runas";
+    sei.lpFile = GetCommandLineW();
     sei.hwnd = NULL;
     sei.nShow = SW_NORMAL;
 
     if (!ShellExecuteEx(&sei)) {
         DWORD err = GetLastError();
         if (err == ERROR_CANCELLED) {
-            std::cerr << "[!] Admin privileges are required. Relaunch the program as administrator.\n";
+            std::wcerr << L"[!] Admin privileges are required. Relaunch the program as administrator.\n";
             exit(1);
         }
     }
@@ -32,59 +32,59 @@ void RequestAdminPrivileges() {
 
 // Optimize NVIDIA settings using nvidia-smi
 void OptimizeNVIDIA() {
-    std::cout << "[*] Applying NVIDIA optimizations...\n";
-    system("nvidia-smi -pm 1 >nul");  // Enable persistence mode
-    system("nvidia-smi -ac 3505,1050 >nul");  // Example memory/core clock settings (adjust based on GPU model)
-    std::cout << "[✔] NVIDIA optimizations applied.\n";
+    std::wcout << L"[*] Applying NVIDIA optimizations...\n";
+    _wsystem(L"nvidia-smi -pm 1 >nul");  // Enable persistence mode
+    _wsystem(L"nvidia-smi -ac 3505,1050 >nul");  // Example memory/core clock settings (adjust based on GPU model)
+    std::wcout << L"[✔] NVIDIA optimizations applied.\n";
 }
 
 // Optimize AMD Radeon settings via registry tweaks
 void OptimizeAMD() {
-    std::cout << "[*] Applying AMD optimizations...\n";
-    system("reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\" /v TdrLevel /t REG_DWORD /d 0 /f");
-    system("reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\" /v TdrDelay /t REG_DWORD /d 8 /f");
-    std::cout << "[✔] AMD optimizations applied.\n";
+    std::wcout << L"[*] Applying AMD optimizations...\n";
+    _wsystem(L"reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\" /v TdrLevel /t REG_DWORD /d 0 /f");
+    _wsystem(L"reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers\" /v TdrDelay /t REG_DWORD /d 8 /f");
+    std::wcout << L"[✔] AMD optimizations applied.\n";
 }
 
 // Optimize CPU performance
 void OptimizeCPU() {
-    system("reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl\" /v Win32PrioritySeparation /t REG_DWORD /d 38 /f >nul");
-    std::cout << "[+] CPU scheduler optimized for high performance.\n";
+    _wsystem(L"reg add \"HKLM\\SYSTEM\\CurrentControlSet\\Control\\PriorityControl\" /v Win32PrioritySeparation /t REG_DWORD /d 38 /f >nul");
+    std::wcout << L"[+] CPU scheduler optimized for high performance.\n";
 }
 
 // Optimize internet settings for lower ping
 void OptimizePing() {
-    std::cout << "[*] Applying network optimizations...\n";
-    system("netsh interface tcp set global autotuninglevel=normal >nul");
-    system("netsh interface tcp set global rss=enabled >nul");
-    system("netsh interface tcp set global congestionprovider=ctcp >nul");
-    system("ipconfig /flushdns >nul");
-    system("netsh int ip reset >nul");
-    std::cout << "[✔] Network settings optimized. Lower ping applied!\n";
+    std::wcout << L"[*] Applying network optimizations...\n";
+    _wsystem(L"netsh interface tcp set global autotuninglevel=normal >nul");
+    _wsystem(L"netsh interface tcp set global rss=enabled >nul");
+    _wsystem(L"netsh interface tcp set global congestionprovider=ctcp >nul");
+    _wsystem(L"ipconfig /flushdns >nul");
+    _wsystem(L"netsh int ip reset >nul");
+    std::wcout << L"[✔] Network settings optimized. Lower ping applied!\n";
 }
 
 // Close unnecessary background processes
 void CloseBackgroundApps() {
-    std::vector<std::string> processes = {"OneDrive.exe", "Skype.exe", "Discord.exe", "Steam.exe", "EpicGamesLauncher.exe"};
+    std::vector<std::wstring> processes = {L"OneDrive.exe", L"Skype.exe", L"Discord.exe", L"Steam.exe", L"EpicGamesLauncher.exe"};
 
     HANDLE hSnap;
-    PROCESSENTRY32 pe32;
+    PROCESSENTRY32W pe32;
     hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
-    pe32.dwSize = sizeof(PROCESSENTRY32);
+    pe32.dwSize = sizeof(PROCESSENTRY32W);
 
-    if (Process32First(hSnap, &pe32)) {
+    if (Process32FirstW(hSnap, &pe32)) {
         do {
             for (const auto& proc : processes) {
-                if (_stricmp(pe32.szExeFile, proc.c_str()) == 0) {
+                if (_wcsicmp(pe32.szExeFile, proc.c_str()) == 0) {
                     HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pe32.th32ProcessID);
                     if (hProcess) {
                         TerminateProcess(hProcess, 0);
                         CloseHandle(hProcess);
-                        std::cout << "[+] Closed: " << proc << std::endl;
+                        std::wcout << L"[+] Closed: " << proc << std::endl;
                     }
                 }
             }
-        } while (Process32Next(hSnap, &pe32));
+        } while (Process32NextW(hSnap, &pe32));
     }
     CloseHandle(hSnap);
 }
@@ -92,26 +92,26 @@ void CloseBackgroundApps() {
 // Clear system memory
 void ClearMemory() {
     SetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
-    std::cout << "[+] Cleared memory.\n";
+    std::wcout << L"[+] Cleared memory.\n";
 }
 
 // Full PC optimization
 void OptimizePC() {
-    std::cout << "[*] Running Full System Optimization...\n";
-    system("cleanmgr /sagerun:1 >nul");
-    system("defrag C: /O >nul");
-    system("ipconfig /flushdns >nul");
-    std::cout << "[✔] Full PC Optimization Completed!\n";
+    std::wcout << L"[*] Running Full System Optimization...\n";
+    _wsystem(L"cleanmgr /sagerun:1 >nul");
+    _wsystem(L"defrag C: /O >nul");
+    _wsystem(L"ipconfig /flushdns >nul");
+    std::wcout << L"[✔] Full PC Optimization Completed!\n";
 }
 
 // Apply game-specific optimizations
-void ApplyGameBoost(std::string gameName) {
-    std::cout << "[*] Optimizing " << gameName << "...\n";
+void ApplyGameBoost(std::wstring gameName) {
+    std::wcout << L"[*] Optimizing " << gameName << L"...\n";
     CloseBackgroundApps();
     ClearMemory();
     OptimizeCPU();
     OptimizePing();
-    std::cout << "[✔] " << gameName << " Optimized Successfully!\n";
+    std::wcout << L"[✔] " << gameName << L" Optimized Successfully!\n";
 }
 
 // Main menu
@@ -120,39 +120,39 @@ int main() {
 
     int choice;
     do {
-        system("cls");
-        std::cout << "============================\n";
-        std::cout << "  Trapping Optimizer - Ultimate Game Booster\n";
-        std::cout << "============================\n";
-        std::cout << "Select a Game to Optimize:\n";
-        std::cout << "1. Roblox\n";
-        std::cout << "2. Valorant\n";
-        std::cout << "3. Fortnite\n";
-        std::cout << "4. CS2 (Counter-Strike 2)\n";
-        std::cout << "5. Apex Legends\n";
-        std::cout << "6. Optimize Full PC Performance\n";
-        std::cout << "7. Optimize NVIDIA GPU\n";
-        std::cout << "8. Optimize AMD GPU\n";
-        std::cout << "9. Optimize Network (Lower Ping)\n";
-        std::cout << "10. Exit\n";
-        std::cout << "============================\n";
-        std::cout << "Enter your choice: ";
-        std::cin >> choice;
+        _wsystem(L"cls");
+        std::wcout << L"============================\n";
+        std::wcout << L"  Trapping Optimizer - Ultimate Game Booster\n";
+        std::wcout << L"============================\n";
+        std::wcout << L"Select a Game to Optimize:\n";
+        std::wcout << L"1. Roblox\n";
+        std::wcout << L"2. Valorant\n";
+        std::wcout << L"3. Fortnite\n";
+        std::wcout << L"4. CS2 (Counter-Strike 2)\n";
+        std::wcout << L"5. Apex Legends\n";
+        std::wcout << L"6. Optimize Full PC Performance\n";
+        std::wcout << L"7. Optimize NVIDIA GPU\n";
+        std::wcout << L"8. Optimize AMD GPU\n";
+        std::wcout << L"9. Optimize Network (Lower Ping)\n";
+        std::wcout << L"10. Exit\n";
+        std::wcout << L"============================\n";
+        std::wcout << L"Enter your choice: ";
+        std::wcin >> choice;
 
         switch (choice) {
-            case 1: ApplyGameBoost("Roblox"); break;
-            case 2: ApplyGameBoost("Valorant"); break;
-            case 3: ApplyGameBoost("Fortnite"); break;
-            case 4: ApplyGameBoost("Counter-Strike 2"); break;
-            case 5: ApplyGameBoost("Apex Legends"); break;
+            case 1: ApplyGameBoost(L"Roblox"); break;
+            case 2: ApplyGameBoost(L"Valorant"); break;
+            case 3: ApplyGameBoost(L"Fortnite"); break;
+            case 4: ApplyGameBoost(L"Counter-Strike 2"); break;
+            case 5: ApplyGameBoost(L"Apex Legends"); break;
             case 6: OptimizePC(); break;
             case 7: OptimizeNVIDIA(); break;
             case 8: OptimizeAMD(); break;
             case 9: OptimizePing(); break;
-            case 10: std::cout << "Exiting... Goodbye!\n"; return 0;
-            default: std::cout << "Invalid option! Try again.\n";
+            case 10: std::wcout << L"Exiting... Goodbye!\n"; return 0;
+            default: std::wcout << L"Invalid option! Try again.\n";
         }
-        system("pause");
+        _wsystem(L"pause");
     } while (choice != 10);
 
     return 0;
